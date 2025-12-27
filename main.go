@@ -3,11 +3,16 @@ package main
 import "os"
 
 func main() {
-	file := os.Args[1]
+	torrentPath := os.Args[1]
 	output := os.Args[2]
 
-	if file == "" || output == "" {
+	if torrentPath == "" || output == "" {
 		panic("Bad")
 	}
 
+	meta := torrent.Parse(torrentPath)
+	peers := tracker.GetPeers(meta)
+
+	downloader := download.New(meta, peers)
+	downloader.Start()
 }
