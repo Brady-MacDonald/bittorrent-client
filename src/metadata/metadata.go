@@ -9,11 +9,10 @@ import (
 	"github.com/jackpal/bencode-go"
 )
 
-// Handle .torrent parsing
-
+// Parsed .torrent file contents
 type Torrent struct {
 	// Required
-	Announce string   `bencode:"announce"`
+	Announce string   `bencode:"announce"` // URL of tracker to request peers from
 	Info     InfoDict `bencode:"info"`
 
 	//Optional
@@ -28,9 +27,9 @@ type InfoDict struct {
 }
 
 // Parse the provided bencoded torrent content
-func ParseTorrent(bencodedTorrent io.Reader) (Torrent, error) {
-	torrent := Torrent{}
-	err := bencode.Unmarshal(bencodedTorrent, &torrent)
+func ParseTorrent(bencodedTorrent io.Reader) (*Torrent, error) {
+	torrent := &Torrent{}
+	err := bencode.Unmarshal(bencodedTorrent, torrent)
 	if err != nil {
 		return torrent, err
 	}
@@ -47,6 +46,20 @@ func OpenTorrent(torrentFile string) (io.Reader, error) {
 
 	torrentReader := bytes.NewReader(torrentBytes)
 	return torrentReader, nil
+}
+
+func GetTorrent(torrentFile string) (*Torrent, error) {
+	torrentReader, err := OpenTorrent(torrentFile)
+	if err != nil {
+		return nil, err
+	}
+
+	torrent, err := ParseTorrent(torrentReader)
+	if err != nil {
+		return nil, err
+	}
+
+	return torrent, nil
 }
 
 // The info hash is the SHA1 of the raw bencoded info dict.

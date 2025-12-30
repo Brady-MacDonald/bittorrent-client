@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/rand"
 	"os"
 
 	"github.com/Brady-MacDonald/bittorrent-client/src/metadata"
@@ -19,17 +20,24 @@ func main() {
 		panic("Must provide input/output file")
 	}
 
-	torrentReader, err := metadata.OpenTorrent(torrentFile)
+	torrent, err := metadata.GetTorrent(torrentFile)
 	if err != nil {
 		panic(err)
 	}
 
-	meta, err := metadata.ParseTorrent(torrentReader)
+	var peerID [20]byte
+	_, err = rand.Read(peerID[:])
 	if err != nil {
 		panic(err)
 	}
 
-	tracker.GetPeers(meta)
-	// downloader := download.New(meta, peers)
-	// downloader.Start()
+	trackerURL, err := tracker.BuildTrackerURL(torrent, peerID)
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = tracker.GetPeers(trackerURL)
+	if err != nil {
+		panic(err)
+	}
 }
