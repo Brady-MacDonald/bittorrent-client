@@ -26,12 +26,16 @@ type InfoDict struct {
 	Pieces      []byte `bencode:"pieces"`
 }
 
-// Parse the provided bencoded torrent content
-func ParseTorrent(bencodedTorrent io.Reader) (*Torrent, error) {
-	torrent := &Torrent{}
-	err := bencode.Unmarshal(bencodedTorrent, torrent)
+// Extract the meta data from provided torrentfile
+func GetTorrent(torrentFile string) (*Torrent, error) {
+	torrentReader, err := OpenTorrent(torrentFile)
 	if err != nil {
-		return torrent, err
+		return nil, err
+	}
+
+	torrent, err := ParseTorrent(torrentReader)
+	if err != nil {
+		return nil, err
 	}
 
 	return torrent, nil
@@ -48,15 +52,12 @@ func OpenTorrent(torrentFile string) (io.Reader, error) {
 	return torrentReader, nil
 }
 
-func GetTorrent(torrentFile string) (*Torrent, error) {
-	torrentReader, err := OpenTorrent(torrentFile)
+// Parse the provided bencoded torrent content
+func ParseTorrent(bencodedTorrent io.Reader) (*Torrent, error) {
+	torrent := &Torrent{}
+	err := bencode.Unmarshal(bencodedTorrent, torrent)
 	if err != nil {
-		return nil, err
-	}
-
-	torrent, err := ParseTorrent(torrentReader)
-	if err != nil {
-		return nil, err
+		return torrent, err
 	}
 
 	return torrent, nil
